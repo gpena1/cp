@@ -103,9 +103,16 @@ public:
     }
 };
 int main(){
-    std::string chill="REATEXPECTATIONS";
-    binary_search_tree* bst=new binary_search_tree(new node('G'));
-    for(const auto &i:chill){
-        bst->insert(new node(i));
+    std::string chill="INSERT STRING HERE";
+    binary_search_tree* bst;
+    for(int i=0;i<chill.length();++i){
+        switch(i){
+            case 0:
+                bst=new binary_search_tree(new node(chill[0]));
+                break;
+            default:
+                bst->insert(new node(chill[i]));
+                break;
+        }
     }
 }
