@@ -27,7 +27,7 @@ int first_greq(vector<int>& x, int target){
             left=mid+1;
         }
     }
-    return left;
+    return x[left]>=target?left:-1;
 }
 int first_gr(vector<int>& x, int target){
     int left=0,right=x.size()-1;
@@ -43,5 +43,5 @@ int first_gr(vector<int>& x, int target){
             left=mid+1;
         }
     }
-    return left;
+    return x[left]>target?left:-1;
 }
