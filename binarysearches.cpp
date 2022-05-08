@@ -3,6 +3,7 @@
 using namespace std;
 
 int first_greq(vector<int>& x, int target){
+    if(x.size()==0) return -1;
     int left=0,right=x.size()-1;
     while(left<right){
         int mid=left+(right-left)/2;
@@ -30,6 +31,7 @@ int first_greq(vector<int>& x, int target){
     return x[left]>=target?left:-1;
 }
 int first_gr(vector<int>& x, int target){
+    if(x.size()==0) return -1;
     int left=0,right=x.size()-1;
     while(left<right){
         int mid=left+(right-left)/2;
