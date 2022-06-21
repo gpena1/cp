@@ -22,6 +22,14 @@ bool arbitrage(unordered_map<string,vector<pair<string,double>>>& map, string st
     return 0;
 }
 int main(){
+    
+    /*
+     * WARNING: EXTREMELY IMPORTANT
+     * THIS PROGRAM DOES NOT ASSUME THAT CURRENCY EXCHANGES ARE BIDIRECTIONAL.
+     * I.E. IF YOU HAVE TWO CURRENCIES A AND B, AND YOU LIST THAT YOU CAN CONVERT FROM A TO B,
+     * THIS PROGRAM WILL NOT LIST B AS CONNECTED TO A, BUT WILL LIST A AS CONNECTED TO B.
+     */
+    
     cout<<"Enter the number of currencies you'll be using: ";
     int n;
     cin>>n;
@@ -52,7 +60,7 @@ int main(){
     for(const auto &i:currencies){
         vector<string> path;
         arbit=arbit or arbitrage(map,i,i,1,visited,path);
-        if (arbit) break;
+//        if (arbit) break;
     }
     for(vector<string>& i: arbitstuff){
         for(const string& k:i){
