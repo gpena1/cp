@@ -22,14 +22,35 @@ bool arbitrage(unordered_map<string,vector<pair<string,double>>>& map, string st
     return 0;
 }
 int main(){
-    
+
     /*
      * WARNING: EXTREMELY IMPORTANT
-     * THIS PROGRAM DOES NOT ASSUME THAT CURRENCY EXCHANGES ARE BIDIRECTIONAL.
-     * I.E. IF YOU HAVE TWO CURRENCIES A AND B, AND YOU LIST THAT YOU CAN CONVERT FROM A TO B,
-     * THIS PROGRAM WILL NOT LIST B AS CONNECTED TO A, BUT WILL LIST A AS CONNECTED TO B.
+     * THIS PROGRAM ASSUMES THAT CURRENCY EXCHANGES ARE BIDIRECTIONAL.
+     * A CONNECTION FROM A TO B MEANS THAT A CAN BUY B AND VICE VERSA.
      */
-    
+
+//    SAMPLE INPUT 1:
+//    ETH LTC 1000:6970
+//    BTC ETH 32:1000
+//    BTC LTC 100:22366
+
+//    SAMPLE INPUT 2:
+//    EUR USD 10000:11038
+//    EUR GBP 10000:8937
+//    GBP USD 10000:12376
+//    EUR JPY 10000:1153520
+//    EUR CHF 10000:10764
+//    USD JPY 10000:1045380
+//    USD CAD 10000:13373
+//    AUD CAD 10000:10309
+//    AUD JPY 10000:805590
+//    USD AUD 7708:10000
+
+//    SAMPLE INPUT 3:
+//    USD EUR 5:1
+//    EUR YEN 1:120
+//    USD YEN 1:24
+
     cout<<"Enter the number of currencies you'll be using: ";
     int n;
     cin>>n;
@@ -43,7 +64,7 @@ int main(){
     cout<<"Enter the number of exchange rates are available: ";
     int exchanges;
     cin>>exchanges;
-    cout<<"Enter the exchange rates in the format 'CUR1 CUR2 X:Y', where X and Y are integers (without the single quoets):\n";
+    cout<<"Enter the exchange rates, line by line, in the format 'CUR1 CUR2 X:Y', where X and Y are integers (without the single quotes):\n";
     unordered_map<string, vector<pair<string, double>>> map;
     for(int i=0;i<exchanges;++i){
         string cur1,cur2,exchange;
@@ -51,9 +72,13 @@ int main(){
         if(!map.count(cur1)){
             map[cur1]=vector<pair<string,double>>();
         }
+        if(!map.count(cur2)){
+            map[cur2]=vector<pair<string,double>>();
+        }
         auto idx=exchange.find(':');
         double rate=stod(exchange.substr(idx+1,string::npos),nullptr)/stod(exchange.substr(0,idx),nullptr);
         map[cur1].emplace_back(cur2,rate);
+        map[cur2].emplace_back(cur1,1/rate);
     }
     bool arbit=0;
     unordered_set<string> visited;
