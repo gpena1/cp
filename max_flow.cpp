@@ -1,11 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
-struct VectorHash{
-    size_t operator()(const vector<int> &a) const{
-        return (((a[0] + a[1]) * (a[0] + a[1] + 1)) >> 1) + 1;
-    }
-};
 int main(){
     ios::sync_with_stdio(0);
     cin.tie(0);
@@ -23,7 +18,6 @@ int main(){
         inneighborhood[b].push_back(a);
         flow[a][b][1] = c;
     }
-    unordered_set<vector<int>,VectorHash> edges_used;
     while(1){
         deque<int> dq;
         vector<int> predecessors(n,-1);
@@ -56,13 +50,11 @@ int main(){
         while(predecessors[cur] != cur){
             int a = predecessors[cur];
             // a backedge was taken
-            if(flow[a][cur][1] == -1) {
+            if(flow[a][cur][1] == -1)
                 bottleneck = min(bottleneck, flow[cur][a][0]);
-                edges_used.insert({cur,a});
-            }else{
+            else
                 bottleneck = min(bottleneck, flow[a][cur][1] - flow[a][cur][0]);
-                edges_used.insert({a,cur});
-            }
+
             cur = a;
         }
 
@@ -80,11 +72,17 @@ int main(){
     }
     ll max_flow = 0;
     for(auto &k: inneighborhood[t]) {
-        max_flow += flow[k][n-1][0];
+        max_flow += flow[k][t][0];
     }
-    cout<<n<<" "<<max_flow<<" "<<(edges_used.size())<<'\n';
+    vector<vector<ll>> edges_used;
+    for(int i=0;i<n;++i){
+        for(auto &k:outneighborhood[i]){
+            if(flow[i][k][0])
+                edges_used.push_back({i,k,flow[i][k][0]});
+        }
+    }
+    cout<<n<<" "<<max_flow<<" "<<edges_used.size()<<'\n';
     for(auto &edge:edges_used){
-        int u = edge[0], v = edge[1];
-        cout<<u<<" "<<v<<" "<<flow[u][v][0]<<'\n';
+        cout<<edge[0]<<" "<<edge[1]<<" "<<edge[2]<<'\n';
     }
 }
