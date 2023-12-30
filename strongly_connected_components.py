@@ -5,10 +5,6 @@ from collections import defaultdict
 def strongly_connected_components(graph,n):
     L = []
     visited = [False] * (n+1)
-    in_neighbors = defaultdict(list)
-    for i,j in graph.items():
-        for k in j:
-            in_neighbors[k].append(i)
 
     def visit(u):
         if not visited[u]:
@@ -21,15 +17,15 @@ def strongly_connected_components(graph,n):
     def assign(u,root):
         if components[u] == -1:
             components[u] = root
-            for k in in_neighbors[u]:
+            for k in graph[u]:
                 assign(k,root)
 
     for i in graph.keys():
         visit(i)
 
-    L = L[::-1]
-
     for i in L:
         assign(i,i)
 
     print('\n'.join(f'{i}: {j}' for i,j in components.items()))
+
+print(strongly_connected_components({1: [2], 2: [3], 3: [1,4], 4:[]}, 4))
