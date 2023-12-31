@@ -7,16 +7,17 @@ int main(){
     int n,m,s,t;
     cin>>n>>m>>s>>t;
     // attempting to implement edmonds karp algorithm for calculating maximum network flow
-    vector<vector<int>> outneighborhood(n, vector<int>());
-    vector<vector<int>> inneighborhood(n, vector<int>());
-    vector<vector<vector<ll>>> flow(n, vector<vector<ll>>(n, {0,-1}));
+    vector<unordered_set<int>> outneighborhood(n, unordered_set<int>());
+    vector<unordered_set<int>> inneighborhood(n, unordered_set<int>());
+    vector<vector<ll>> flow(n, vector<ll>(n, 0));
+    vector<vector<ll>> capacities(n, vector<ll>(n, INT64_MAX));
     for(int i=0;i<m;++i){
         int a,b;
         ll c;
         cin>>a>>b>>c;
-        outneighborhood[a].push_back(b);
-        inneighborhood[b].push_back(a);
-        flow[a][b][1] = c;
+        outneighborhood[a].insert(b);
+        inneighborhood[b].insert(a);
+        capacities[a][b] = c;
     }
     while(1){
         deque<int> dq;
@@ -32,13 +33,13 @@ int main(){
             }
             dq.pop_front();
             for(auto &k:outneighborhood[cur]){
-                if(flow[cur][k][1] - flow[cur][k][0] > 0 && predecessors[k] == -1){
+                if(flow[cur][k] < capacities[cur][k] && predecessors[k] == -1){
                     predecessors[k] = cur;
                     dq.push_back(k);
                 }
             }
             for(auto &k:inneighborhood[cur]){
-                if(flow[k][cur][0] > 0 && predecessors[k] == -1){
+                if(flow[k][cur] > 0 && predecessors[k] == -1) {
                     predecessors[k] = cur;
                     dq.push_back(k);
                 }
@@ -48,41 +49,41 @@ int main(){
         int cur = t;
         ll bottleneck = INT64_MAX;
         while(predecessors[cur] != cur){
-            int a = predecessors[cur];
-            // a backedge was taken
-            if(flow[a][cur][1] == -1)
-                bottleneck = min(bottleneck, flow[cur][a][0]);
+            int parent = predecessors[cur];
+            // backedge taken
+            if(!outneighborhood[parent].count(cur))
+                bottleneck = min(bottleneck, flow[cur][parent]);
             else
-                bottleneck = min(bottleneck, flow[a][cur][1] - flow[a][cur][0]);
+                bottleneck = min(bottleneck, capacities[parent][cur] - flow[parent][cur]);
 
-            cur = a;
+            cur = parent;
         }
-
+        assert(bottleneck > 0);
         cur = t;
         while(predecessors[cur] != cur){
-            int a = predecessors[cur];
-            // a backedge was taken
-            if(flow[a][cur][1] == -1)
-                flow[cur][a][0] -= bottleneck;
-            else
-                flow[a][cur][0] += bottleneck;
+            int parent = predecessors[cur];
 
-            cur = a;
+            flow[parent][cur] += bottleneck;
+            flow[cur][parent] -= bottleneck;
+
+            cur = parent;
         }
     }
     ll max_flow = 0;
-    for(auto &k: inneighborhood[t]) {
-        max_flow += flow[k][t][0];
+    for(auto &k:inneighborhood[t]){
+        max_flow += flow[k][t];
     }
     vector<vector<ll>> edges_used;
     for(int i=0;i<n;++i){
-        for(auto &k:outneighborhood[i]){
-            if(flow[i][k][0])
-                edges_used.push_back({i,k,flow[i][k][0]});
+        for(int j=0;j<n;++j){
+            if(flow[i][j] > 0){
+                edges_used.push_back({i,j,flow[i][j]});
+            }
         }
     }
     cout<<n<<" "<<max_flow<<" "<<edges_used.size()<<'\n';
     for(auto &edge:edges_used){
         cout<<edge[0]<<" "<<edge[1]<<" "<<edge[2]<<'\n';
     }
+    return 0;
 }
