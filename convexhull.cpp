@@ -1,5 +1,7 @@
 // this code AC's on Kattis' Convex Hull (id: convexhull) problem.
 // I honestly have no idea why.
+// IMPORTANT: THE IMPLEMENTATION BY CP-ALGORITHMS DOES NOT WORK WHEN include_collinear IS TRUE.
+// USE THAT FUNCTIONALITY AT YOUR OWN RISK.
 #include <bits/stdc++.h>
 using namespace std;
 struct pt {
