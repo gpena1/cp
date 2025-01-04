@@ -1,89 +1,85 @@
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
-int main(){
-    ios::sync_with_stdio(0);
-    cin.tie(0);
-    int n,m,s,t;
-    cin>>n>>m>>s>>t;
-    // attempting to implement edmonds karp algorithm for calculating maximum network flow
-    vector<unordered_set<int>> outneighborhood(n, unordered_set<int>());
-    vector<unordered_set<int>> inneighborhood(n, unordered_set<int>());
-    vector<vector<ll>> flow(n, vector<ll>(n, 0));
-    vector<vector<ll>> capacities(n, vector<ll>(n, INT64_MAX));
-    for(int i=0;i<m;++i){
-        int a,b;
-        ll c;
-        cin>>a>>b>>c;
-        outneighborhood[a].insert(b);
-        inneighborhood[b].insert(a);
-        capacities[a][b] = c;
-    }
-    while(1){
-        deque<int> dq;
-        vector<int> predecessors(n,-1);
-        predecessors[s] = s;
-        dq.push_back(s);
-        bool end_reached = false;
-        while(!dq.empty()){
-            int cur = dq.front();
-            if(cur == t){
-                end_reached = true;
-                break;
-            }
-            dq.pop_front();
-            for(auto &k:outneighborhood[cur]){
-                if(flow[cur][k] < capacities[cur][k] && predecessors[k] == -1){
-                    predecessors[k] = cur;
-                    dq.push_back(k);
-                }
-            }
-            for(auto &k:inneighborhood[cur]){
-                if(flow[k][cur] > 0 && predecessors[k] == -1) {
-                    predecessors[k] = cur;
-                    dq.push_back(k);
-                }
-            }
-        }
-        if(!end_reached) break;
-        int cur = t;
-        ll bottleneck = INT64_MAX;
-        while(predecessors[cur] != cur){
-            int parent = predecessors[cur];
-            // backedge taken
-            if(!outneighborhood[parent].count(cur))
-                bottleneck = min(bottleneck, flow[cur][parent]);
-            else
-                bottleneck = min(bottleneck, capacities[parent][cur] - flow[parent][cur]);
+ 
+vector<vector<int>> G;
+ll capacities[501][501], flow[501][501];
+int level[501];
+bool dead[501];
+bool visited[501];
+int n;
 
-            cur = parent;
-        }
-        assert(bottleneck > 0);
-        cur = t;
-        while(predecessors[cur] != cur){
-            int parent = predecessors[cur];
+// The following is an implementation of Dinic's algorithm.
+// The source and sink are assumed to be nodes 1 and n, respectively,
+// and the nodes all take on values between 1 and n inclusive.
 
-            flow[parent][cur] += bottleneck;
-            flow[cur][parent] -= bottleneck;
-
-            cur = parent;
+ll dfs(int u, ll bottleneck) {
+    if (u == n) return bottleneck;
+    for (auto &v : G[u]) {
+        if (level[v] != level[u] + 1) continue;
+        if (capacities[u][v] - flow[u][v] <= 0) continue;
+        if (dead[v]) continue;
+        if (ll result = dfs(v, min(bottleneck, capacities[u][v] - flow[u][v]))) {
+            flow[u][v] += result;
+            flow[v][u] -= result;
+            return result;
         }
     }
-    ll max_flow = 0;
-    for(auto &k:inneighborhood[t]){
-        max_flow += flow[k][t];
-    }
-    vector<vector<ll>> edges_used;
-    for(int i=0;i<n;++i){
-        for(int j=0;j<n;++j){
-            if(flow[i][j] > 0){
-                edges_used.push_back({i,j,flow[i][j]});
-            }
-        }
-    }
-    cout<<n<<" "<<max_flow<<" "<<edges_used.size()<<'\n';
-    for(auto &edge:edges_used){
-        cout<<edge[0]<<" "<<edge[1]<<" "<<edge[2]<<'\n';
-    }
+    dead[u] = true;
     return 0;
+}
+ 
+ll blocking_flow() {
+    memset(level, -1, sizeof(level));
+    memset(dead, 0, sizeof(dead));
+    memset(visited, 0, sizeof(visited));
+    queue<int> q;
+    q.push(1);
+    level[1] = 0;
+    visited[1] = 1;
+ 
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        for (int v : G[u]) {
+            if (!visited[v] && capacities[u][v] - flow[u][v] > 0) {
+                level[v] = level[u] + 1;
+                visited[v] = 1;
+                q.push(v);
+            }
+        }
+    }
+ 
+    if (level[n] == -1) return 0; 
+    ll total_flow = 0;
+    while (ll added = dfs(1, LLONG_MAX)) total_flow += added;
+    return total_flow;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+ 
+    int m;
+    cin >> n >> m;
+    G.assign(n + 1, vector<int>());
+ 
+    memset(capacities, 0, sizeof(capacities));
+    memset(flow, 0, sizeof(flow));
+ 
+    for (int i = 0; i < m; ++i) {
+        int a, b;
+        ll c;
+        cin >> a >> b >> c;
+        capacities[a][b] += c;
+        G[a].push_back(b);
+        G[b].push_back(a);
+    }
+ 
+    ll max_flow = 0;
+    while (ll added_flow = blocking_flow()) {
+        max_flow += added_flow;
+    }
+ 
+    cout << max_flow << '\n';
 }
